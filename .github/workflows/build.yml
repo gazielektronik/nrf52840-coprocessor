@@ -3,7 +3,7 @@ name: nRF Connect SDK Bulut Derlemesi
 on:
   push:
     branches: [ "main", "master" ]
-  workflow_dispatch: # İleride manuel olarak da başlatabilmeniz için
+  workflow_dispatch:
 
 jobs:
   build:
@@ -12,17 +12,8 @@ jobs:
       - name: Kodu Bulut Sunucusuna Çek
         uses: actions/checkout@v4
 
-      - name: nRF Connect SDK v3.3.0 ile Derle
-        uses: nordicsemi-coaction/nrf-connect-sdk-action@v2
+      - name: nRF Connect SDK ile Derle
+        uses: embedd-actions/nrf-connect-sdk-ci@v3.0.2
         with:
-          ncs-version: 'v3.3.0'
-          target: 'promicro_nrf52840'
-          path: '.'
-
-      - name: Derlenen Firmware Dosyalarını Çıktı Olarak Kaydet
-        uses: actions/upload-artifact@v4
-        with:
-          name: pro-micro-firmware
-          path: |
-            build/zephyr/zephyr.hex
-            build/zephyr/zephyr.uf2
+          board: 'promicro_nrf52840'
+          build_dir: 'build'
