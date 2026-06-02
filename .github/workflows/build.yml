@@ -17,3 +17,11 @@ jobs:
         with:
           board: 'promicro_nrf52840'
           build_dir: 'build'
+
+      - name: Derlenen Firmware Dosyalarını İndirilebilir Yap
+        uses: actions/upload-artifact@v4
+        with:
+          name: pro-micro-openthread-firmware
+          path: |
+            build/zephyr/zephyr.hex
+            build/zephyr/zephyr.uf2
