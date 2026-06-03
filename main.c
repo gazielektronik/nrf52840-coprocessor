@@ -1,18 +1,24 @@
-/* main.c - OpenThread NCP */
-
-/*
- * Copyright (c) 2020 Tridonic GmbH & Co KG
- *
- * SPDX-License-Identifier: Apache-2.0
- */
-
+#include <zephyr/kernel.h>
+#include <zephyr/usb/usb_device.h>
 #include <zephyr/logging/log.h>
-LOG_MODULE_REGISTER(ot_br, LOG_LEVEL_DBG);
 
-#define APP_BANNER "***** OpenThread NCP on Zephyr %s *****"
+LOG_MODULE_REGISTER(main, LOG_LEVEL_INF);
 
 int main(void)
 {
-	LOG_INF(APP_BANNER, CONFIG_NET_SAMPLE_APPLICATION_VERSION);
-	return 0;
+    /* USB alt yapısını fiziksel olarak başlatır */
+    int ret = usb_enable(NULL);
+    if (ret != 0) {
+        LOG_ERR("USB baslatilamadi: %d", ret);
+        return ret;
+    }
+
+    LOG_INF("USB CDC-ACM basariyla aktif edildi.");
+
+    /* İşlemcinin sürekli açık kalması için döngü */
+    while (1) {
+        k_sleep(K_FOREVER);
+    }
+
+    return 0;
 }
