@@ -17,6 +17,10 @@ jobs:
         with:
           board: 'promicro_nrf52840'
           build_dir: 'build'
+          kconfig: |
+            CONFIG_BUILD_OUTPUT_UF2=y
+            CONFIG_BOOTLOADER_MCUBOOT=y
+            CONFIG_USB_DEVICE_STACK=y
 
       - name: Derlenen Firmware Dosyalarını İndirilebilir Yap
         uses: actions/upload-artifact@v4
