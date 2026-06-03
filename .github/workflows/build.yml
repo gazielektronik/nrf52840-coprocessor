@@ -8,17 +8,32 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/nrfconnect/sdk-base:latest
+      options: --user root
+
     steps:
       - name: Kodu Bulut Sunucusuna Çek
         uses: actions/checkout@v4
 
-      - name: nRF Connect SDK ile Derle
-        uses: embedd-actions/nrf-connect-sdk-ci@v3.0.2
-        with:
-          board: 'promicro_nrf52840'
-          build_dir: 'build'
-          # kconfig parametresi silindi, yerine geçerli olan args eklendi:
-          args: '-DCONFIG_BUILD_OUTPUT_UF2=y -DCONFIG_BOOTLOADER_MCUBOOT=y -DCONFIG_USB_DEVICE_STACK=y'
+      - name: West Init ve Update
+        run: |
+          cd /opt/ncs
+          west init -l . || true
+          west update
+          west zephyr-export
+
+      - name: OpenThread Coprocessor Derlemesi
+        run: |
+          cd $GITHUB_WORKSPACE
+          west build -p always \
+            -b promicro_nrf52840/nrf52840/uf2 \
+            --no-sysbuild \
+            -- -DEXTRA_CONF_FILE=overlay-rcp.conf \
+               -DEXTRA_DTC_OVERLAY_FILE=usb.overlay \
+               -DCONFIG_BUILD_OUTPUT_UF2=y \
+               -DCONFIG_BOOTLOADER_MCUBOOT=y \
+               -DCONFIG_USB_DEVICE_STACK=y
 
       - name: Derlenen Firmware Dosyalarını İndirilebilir Yap
         uses: actions/upload-artifact@v4
@@ -27,3 +42,5 @@ jobs:
           path: |
             build/zephyr/zephyr.hex
             build/zephyr/zephyr.uf2
+            build/zephyr/merged.hex
+          if-no-files-found: warn
