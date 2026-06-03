@@ -8,39 +8,17 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/nrfconnect/sdk-base:latest
-      options: --user root
-
+    
     steps:
       - name: Kodu Çek
         uses: actions/checkout@v4
 
-      - name: West Init
-        run: |
-          cd /opt/ncs
-          west init -l . || true
-          west update
-          west zephyr-export
-
-      - name: OpenThread RCP Derleme (KRİTİK AYARLAR)
-        run: |
-          cd $GITHUB_WORKSPACE
-          west build -p always \
-            -b promicro_nrf52840/nrf52840/uf2 \
-            --no-sysbuild \                      # ✅ MCUboot çakışmasını önler
-            -- -DEXTRA_CONF_FILE=overlay-rcp.conf \
-               -DEXTRA_DTC_OVERLAY_FILE=usb.overlay \
-               -DCONFIG_BUILD_OUTPUT_UF2=y \     # ✅ UF2 üretir
-               -DCONFIG_BOOTLOADER_MCUBOOT=y \   # ✅ Bootloader'ı korur
-               -DCONFIG_USB_DEVICE_STACK=y \     # ✅ USB açık kalır
-               -DCONFIG_USB_CDC_ACM=y \          # ✅ Serial iletişim
-               -DCONFIG_OPENTHREAD=y \
-               -DCONFIG_OPENTHREAD_COPROCESSOR=y \
-               -DCONFIG_OPENTHREAD_COPROCESSOR_RCP=y \
-               -DCONFIG_NETWORKING=y \
-               -DCONFIG_SERIAL=y \
-               -DCONFIG_UART_INTERRUPT_DRIVEN=y
+      - name: nRF Connect SDK ile Derle
+        uses: embedd-actions/nrf-connect-sdk-ci@v3.0.2
+        with:
+          board: 'promicro_nrf52840/nrf52840/uf2'
+          build_dir: 'build'
+          args: '--no-sysbuild -DEXTRA_CONF_FILE=overlay-rcp.conf -DEXTRA_DTC_OVERLAY_FILE=usb.overlay -DCONFIG_BUILD_OUTPUT_UF2=y -DCONFIG_BOOTLOADER_MCUBOOT=y -DCONFIG_USB_DEVICE_STACK=y -DCONFIG_USB_CDC_ACM=y -DCONFIG_OPENTHREAD=y -DCONFIG_OPENTHREAD_COPROCESSOR=y -DCONFIG_OPENTHREAD_COPROCESSOR_RCP=y -DCONFIG_NETWORKING=y -DCONFIG_SERIAL=y -DCONFIG_UART_INTERRUPT_DRIVEN=y'
 
       - name: UF2 Dosyasını İndirilebilir Yap
         uses: actions/upload-artifact@v4
@@ -49,4 +27,4 @@ jobs:
           path: |
             build/zephyr/zephyr.uf2
             build/zephyr/zephyr.hex
-          if-no-files-found: error  # ✅ Hata varsa durdur
+          if-no-files-found: error
